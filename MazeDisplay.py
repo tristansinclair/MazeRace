@@ -14,8 +14,8 @@ BLACK = (0, 0, 0)
 WHITE = (250, 250, 250)
 GREEN = (0, 220, 0)
 # Width and Height per square
-WIDTH = 10
-HEIGHT = 10
+WIDTH = 11
+HEIGHT = 11
 # Space between squares
 MARGIN = 1
 
@@ -34,7 +34,6 @@ class Maze:
         if location.row < 0 or location.row > self.rows - 1 or location.column < 0 or location.column > self.columns - 1 or self.grid[location.row][location.column] == 'B':
             return False
         return True
-
 
 """
 GridLocation
@@ -58,8 +57,6 @@ class GridLocation:
 """
 Reads in a txt file maze and turns it into a grid
 """
-
-
 def importMaze(filename):
     with open(filename) as f:
         grid = [list(line.rstrip()) for line in f]
@@ -79,8 +76,6 @@ def importMaze(filename):
 """
 Takes in maze object and return solution in a stack of GridLocations
 """
-
-
 def solveMaze(maze):
     width = maze.columns
     height = maze.rows
@@ -96,6 +91,8 @@ def solveMaze(maze):
     while True:
         path = paths.pop(0)
         location = path[-1]
+
+        #print(path)
 
         # Next Moves
         north = copy.deepcopy(location)
@@ -131,8 +128,6 @@ print(answer)
 Draws the grid into a window.
 Takes in a maze file and the answer
 """
-
-
 def drawMaze(maze, answer):
     for location in answer:
         maze.grid[location.row][location.column] = 'G'
