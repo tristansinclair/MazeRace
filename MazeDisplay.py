@@ -1,6 +1,7 @@
 """
 MazeDisplay.py
-Reads in and displays a maze which can then be solved
+Reads in a maze.txt file, solves the maze, 
+and displays the solved maze.
 
 by: Tristan Sinclair
 """
@@ -10,66 +11,82 @@ import time
 
 # Colors
 BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-
+WHITE = (250, 250, 250)
+GREEN = (0, 220, 0)
 # Width and Height per square
 WIDTH = 10
 HEIGHT = 10
-
-
 # Space between squares
 MARGIN = 1
 
-
+"""
+Maze
+Holds grid, row & column data
+"""
 class Maze:
-    def __init__(self, rows, columns, grid):  
+    def __init__(self, rows, columns, grid):
         self.rows = rows
         self.columns = columns
         self.grid = grid
-    
+    # Checks if a move is valid
+
     def checkMove(self, location):
-        if location.row < 0 or location.row > self.rows - 1  or location.column < 0 or location.column > self.columns - 1 or self.grid[location.row][location.column] == 'B':
+        if location.row < 0 or location.row > self.rows - 1 or location.column < 0 or location.column > self.columns - 1 or self.grid[location.row][location.column] == 'B':
             return False
         return True
 
+
+"""
+GridLocation
+Holds row and column data
+Can be used in a set!
+"""
 class GridLocation:
     def __init__(self, row, column):
         self.row = row
         self.column = column
-    
+
     def __hash__(self):
         return hash((self.row, self.column))
 
     def __eq__(self, other):
-        if not isinstance(other, type(self)): return NotImplemented
+        if not isinstance(other, type(self)):
+            return NotImplemented
         return self.row == other.row and self.column == other.column
+
+
+"""
+Reads in a txt file maze and turns it into a grid
+"""
+
 
 def importMaze(filename):
     with open(filename) as f:
         grid = [list(line.rstrip()) for line in f]
-    
+
     rows = len(grid)
     columns = len(grid[0])
 
+    # Check maze format
     for i in range(len(grid)):
         if len(grid[i]) != columns:
-            raise Exception("Maze is improperly formatted") 
-    
+            raise Exception("Maze is improperly formatted")
+
     maze = Maze(rows, columns, grid)
     return maze
 
-#test = GridLocation(-1, -1)
-#maze.checkMove(test)
+
+"""
+Takes in maze object and return solution in a stack of GridLocations
+"""
 
 
 def solveMaze(maze):
     width = maze.columns
     height = maze.rows
 
-    copiedPath = [] # Stack<GridLocation>
-    paths = [] # Queue<Stack<GridLocation>>
+    copiedPath = []  # Stack<GridLocation>
+    paths = []  # Queue<Stack<GridLocation>>
 
     start = GridLocation(0, 0)
     priorLocations = {start}
@@ -100,13 +117,20 @@ def solveMaze(maze):
                     copiedPath.append(move)
                     if ((move.column == maze.columns - 1) and (move.row == maze.rows - 1)):
                         return copiedPath
-                    
+
                     paths.append(copiedPath)
             priorLocations.add(move)
 
+
+# Test run on importing a maze and finding the solution
 maze = importMaze("mazetest2.txt")
 answer = solveMaze(maze)
 print(answer)
+
+"""
+Draws the grid into a window.
+Takes in a maze file and the answer
+"""
 
 
 def drawMaze(maze, answer):
@@ -137,49 +161,38 @@ def drawMaze(maze, answer):
     return
 
 
-WINDOW_SIZE = [(HEIGHT + MARGIN) * maze.columns + MARGIN, (WIDTH + MARGIN) * maze.rows + MARGIN]
+# Window dimensions
+WINDOW_SIZE = [(HEIGHT + MARGIN) * maze.columns + MARGIN,
+               (WIDTH + MARGIN) * maze.rows + MARGIN]
 screen = pygame.display.set_mode(WINDOW_SIZE)
-
-# Set title of screen
+# Title
 pygame.display.set_caption("Maze Solver")
-
-# Loop until the user clicks the close button.
+# Until user closes window
 done = False
-
-# Used to manage how fast the screen updates
+# FPS
 clock = pygame.time.Clock()
 
-# -------- Main Program Loop -----------
+# Control function
 while not done:
-    for event in pygame.event.get():  # User did something
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True  # Flag that we are done so we exit this loop
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            # User clicks the mouse. Get the position
             pos = pygame.mouse.get_pos()
-            # Change the x/y screen coordinates to grid coordinates
             column = pos[0] // (WIDTH + MARGIN)
             row = pos[1] // (HEIGHT + MARGIN)
-            # Set that location to one
-            if maze.grid[row][column] == 'W':
-                maze.grid[row][column] = 'G'
-            else:
-                print("Error, space is not available")
-            print("Click ", pos, "Grid coordinates: ", row, column)
 
-    # Set the screen background
+            # else:
+            #     print("Error, space is not available")
+            # print("Click ", pos, "Grid coordinates: ", row, column)
+
+    # Background
     screen.fill(WHITE)
-
-    # Draw the grid
+    # Draw maze
     drawMaze(maze, answer)
-
-    # Limit to 60 frames per second
+    # FPS < 60
     clock.tick(60)
 
-    # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
-
-# Be IDLE friendly. If you forget this line, the program will 'hang'
-# on exit.
 
 pygame.quit()
